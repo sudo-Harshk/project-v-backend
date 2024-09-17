@@ -21,6 +21,10 @@ const jobUrls = [
   },
 ];
 
+app.get('/', (req, res) => {
+  res.send('Welcome to the Job Listings API! Navigate to /api/jobs for job data.');
+});
+
 app.get('/api/jobs', async (req, res) => {
   try {
     const jobDataPromises = jobUrls.map(async (jobCategory) => {
