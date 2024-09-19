@@ -7,18 +7,9 @@ const app = express();
 app.use(cors());
 
 const jobUrls = [
-  {
-    name: 'Latest Jobs',
-    url: 'https://sarkariwallahjob.com/category/new-job/',
-  },
-  {
-    name: 'Central Jobs',
-    url: 'https://sarkariwallahjob.com/category/central-job/',
-  },
-  {
-    name: 'Bank Jobs',
-    url: 'https://sarkariwallahjob.com/category/bank-job/',
-  },
+  { name: 'Latest Jobs', url: 'https://sarkariwallahjob.com/category/new-job/' },
+  { name: 'Central Jobs', url: 'https://sarkariwallahjob.com/category/central-job/' },
+  { name: 'Bank Jobs', url: 'https://sarkariwallahjob.com/category/bank-job/' },
 ];
 
 app.get('/', (req, res) => {
@@ -32,7 +23,6 @@ app.get('/api/jobs', async (req, res) => {
         const response = await axios.get(jobCategory.url);
         const html = response.data;
         const $ = cheerio.load(html);
-
         const jobs = [];
 
         $('.elementor-post').each((index, element) => {
@@ -40,7 +30,6 @@ app.get('/api/jobs', async (req, res) => {
           const link = $(element).find('.elementor-post__title a').attr('href');
           const dateText = $(element).find('.elementor-post-date').text().trim();
           const description = $(element).find('.elementor-post__excerpt p').text().trim();
-
           const date = new Date(dateText);
 
           jobs.push({
@@ -52,20 +41,16 @@ app.get('/api/jobs', async (req, res) => {
           });
         });
 
-        console.log(`${jobCategory.name} fetched successfully`);
         return jobs;
       } catch (error) {
-        console.error(`Error fetching ${jobCategory.name}:`, error.message);
         return [];
       }
     });
 
     const jobData = await Promise.all(jobDataPromises);
     const allJobs = [].concat(...jobData);
-
     res.json(allJobs);
   } catch (error) {
-    console.error('Error fetching job data:', error.message);
     res.status(500).json({ error: 'Error fetching job data' });
   }
 });
@@ -74,5 +59,7 @@ app.use(express.static('public'));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  setInterval(() => {
+    axios.get(`http://localhost:${PORT}/api/jobs`).catch(() => {});
+  }, 10 * 60 * 1000);
 });
