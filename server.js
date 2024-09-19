@@ -59,6 +59,7 @@ app.use(express.static('public'));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
   setInterval(() => {
     axios.get(`http://localhost:${PORT}/api/jobs`).catch(() => {});
   }, 10 * 60 * 1000);
