@@ -9,8 +9,8 @@ app.use(cors());
 const jobUrls = [
   { name: 'Latest Jobs', url: 'https://sarkariwallahjob.com/category/new-job/' },
   { name: 'Central Jobs', url: 'https://sarkariwallahjob.com/category/central-job/' },
-  { name: 'Bank Jobs', url: 'https://sarkariwallahjob.com/category/bank-job/' },
-  { name: '10th Pass Govt Jobs', url: 'https://allgovernmentjobs.in/10th-pass-govt-jobs' },
+  { name: 'Bank Jobs', url: 'https://sarkariwallahjob.com/category/bank-job/' }
+  // Removed 10th Pass Jobs URL due to issues
 ];
 
 app.get('/', (req, res) => {
@@ -31,42 +31,19 @@ app.get('/api/jobs', async (req, res) => {
         const jobs = [];
 
         // Scrape jobs for Sarkari Wallah
-        if (jobCategory.url.includes('sarkariwallahjob.com')) {
-          $('.elementor-post').each((index, element) => {
-            const title = $(element).find('.elementor-post__title a').text().trim();
-            const link = $(element).find('.elementor-post__title a').attr('href');
-            const dateText = $(element).find('.elementor-post-date').text().trim();
-            const description = $(element).find('.elementor-post__excerpt p').text().trim();
-            const date = new Date(dateText);
+        $('.elementor-post').each((index, element) => {
+          const title = $(element).find('.elementor-post__title a').text().trim();
+          const link = $(element).find('.elementor-post__title a').attr('href');
+          const dateText = $(element).find('.elementor-post-date').text().trim();
+          const date = new Date(dateText);
 
-            jobs.push({
-              title,
-              link,
-              date: isNaN(date.getTime()) ? null : date,
-              description,
-              category: jobCategory.name,
-            });
+          jobs.push({
+            title,
+            link,
+            date: isNaN(date.getTime()) ? null : date,
+            category: jobCategory.name,
           });
-        }
-
-        // Scrape jobs for All Government Jobs
-        if (jobCategory.url.includes('allgovernmentjobs.in')) {
-          $('.card').each((index, element) => {
-            const title = $(element).find('.card-title').text().trim();
-            const link = $(element).find('a').attr('href');
-            const dateText = $(element).find('._ln').text().trim();
-            const description = $(element).find('.content').text().trim();
-            const date = new Date(dateText);
-
-            jobs.push({
-              title,
-              link,
-              date: isNaN(date.getTime()) ? null : date,
-              description,
-              category: jobCategory.name,
-            });
-          });
-        }
+        });
 
         return jobs;
       } catch (error) {
@@ -83,12 +60,7 @@ app.get('/api/jobs', async (req, res) => {
   }
 });
 
-app.use(express.static('public'));
-
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
-  setInterval(() => {
-    axios.get(`http://localhost:${PORT}/api/jobs`).catch(() => {});
-  }, 10 * 60 * 1000);
 });
