@@ -9,8 +9,8 @@ app.use(cors());
 const jobUrls = [
   { name: 'Latest Jobs', url: 'https://sarkariwallahjob.com/category/new-job/' },
   { name: 'Central Jobs', url: 'https://sarkariwallahjob.com/category/central-job/' },
-  { name: 'Bank Jobs', url: 'https://sarkariwallahjob.com/category/bank-job/' }
-  // Removed 10th Pass Jobs URL due to issues
+  { name: 'Bank Jobs', url: 'https://sarkariwallahjob.com/category/bank-job/' },
+  { name: '10th Pass Govt Jobs', url: 'https://allgovernmentjobs.in/10th-pass-govt-jobs' } // Added new URL
 ];
 
 app.get('/', (req, res) => {
@@ -30,20 +30,37 @@ app.get('/api/jobs', async (req, res) => {
         const $ = cheerio.load(html);
         const jobs = [];
 
-        // Scrape jobs for Sarkari Wallah
-        $('.elementor-post').each((index, element) => {
-          const title = $(element).find('.elementor-post__title a').text().trim();
-          const link = $(element).find('.elementor-post__title a').attr('href');
-          const dateText = $(element).find('.elementor-post-date').text().trim();
-          const date = new Date(dateText);
+        // Scrape jobs for the 10th Pass Govt Jobs
+        if (jobCategory.name === '10th Pass Govt Jobs') {
+          $('.card').each((index, element) => {
+            const title = $(element).find('.card-title').text().trim();
+            const link = $(element).find('a').attr('href');
+            const dateText = $(element).find('._ln').text().trim();
+            const date = new Date(dateText);
 
-          jobs.push({
-            title,
-            link,
-            date: isNaN(date.getTime()) ? null : date,
-            category: jobCategory.name,
+            jobs.push({
+              title,
+              link,
+              date: isNaN(date.getTime()) ? null : date,
+              category: jobCategory.name,
+            });
           });
-        });
+        } else {
+          // Scrape jobs for Sarkari Wallah
+          $('.elementor-post').each((index, element) => {
+            const title = $(element).find('.elementor-post__title a').text().trim();
+            const link = $(element).find('.elementor-post__title a').attr('href');
+            const dateText = $(element).find('.elementor-post-date').text().trim();
+            const date = new Date(dateText);
+
+            jobs.push({
+              title,
+              link,
+              date: isNaN(date.getTime()) ? null : date,
+              category: jobCategory.name,
+            });
+          });
+        }
 
         return jobs;
       } catch (error) {
@@ -56,6 +73,7 @@ app.get('/api/jobs', async (req, res) => {
     const allJobs = [].concat(...jobData);
     res.json(allJobs);
   } catch (error) {
+    console.error('Error fetching job data:', error.message);
     res.status(500).json({ error: 'Error fetching job data' });
   }
 });
