@@ -10,7 +10,8 @@ const jobUrls = [
   { name: 'Latest Jobs', url: 'https://sarkariwallahjob.com/category/new-job/' },
   { name: 'Central Jobs', url: 'https://sarkariwallahjob.com/category/central-job/' },
   { name: 'Bank Jobs', url: 'https://sarkariwallahjob.com/category/bank-job/' },
-  { name: '10th Pass Govt Jobs', url: 'https://allgovernmentjobs.in/10th-pass-govt-jobs' } // Added new URL
+  { name: '10th Pass Govt Jobs', url: 'https://allgovernmentjobs.in/10th-pass-govt-jobs' },
+  { name: 'Intermediate Jobs', url: 'https://allgovernmentjobs.in/intermediate-10-2-jobs' }
 ];
 
 app.get('/', (req, res) => {
@@ -30,7 +31,7 @@ app.get('/api/jobs', async (req, res) => {
         const $ = cheerio.load(html);
         const jobs = [];
 
-        // Scrape jobs for the 10th Pass Govt Jobs
+        // Scrape jobs based on the job category
         if (jobCategory.name === '10th Pass Govt Jobs') {
           $('.card').each((index, element) => {
             const title = $(element).find('.card-title').text().trim();
@@ -45,8 +46,21 @@ app.get('/api/jobs', async (req, res) => {
               category: jobCategory.name,
             });
           });
+        } else if (jobCategory.name === 'Intermediate Jobs') {
+          $('.card-body').each((index, element) => {
+            const title = $(element).find('.card-title').text().trim() || "No Title Available";
+            const link = $(element).find('a').attr('href');
+            const dateText = $(element).find('._ln').text().trim();
+            const date = new Date(dateText);
+        
+            jobs.push({
+              title,
+              link,
+              date: isNaN(date.getTime()) ? null : date,
+              category: jobCategory.name,
+            });
+          });                        
         } else {
-          // Scrape jobs for Sarkari Wallah
           $('.elementor-post').each((index, element) => {
             const title = $(element).find('.elementor-post__title a').text().trim();
             const link = $(element).find('.elementor-post__title a').attr('href');
