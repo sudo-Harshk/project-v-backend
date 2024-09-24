@@ -3,8 +3,14 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const cors = require('cors');
 
+// Load environment variables from .env file
+require('dotenv').config();
+
 const app = express();
 app.use(cors());
+
+// Use the YouTube API key from the environment variables
+const youtubeApiKey = process.env.YOUTUBE_API_KEY;
 
 const jobUrls = [
   { name: 'Latest Jobs', url: 'https://sarkariwallahjob.com/category/new-job/' },
@@ -52,7 +58,7 @@ app.get('/api/jobs', async (req, res) => {
             const link = $(element).find('a').attr('href');
             const dateText = $(element).find('._ln').text().trim();
             const date = new Date(dateText);
-        
+
             jobs.push({
               title,
               link,
